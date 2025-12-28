@@ -119,59 +119,93 @@ cd ~/cpp-backend-services
 
 ### Base URL: `http://localhost:8080`
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/` | API information |
-| GET | `/health` | Basic health check |
-| GET | `/health/database` | Database health check |
-| GET | `/api/users` | Get all users |
-| GET | `/api/users/{id}` | Get user by ID |
-| POST | `/api/users` | Create new user |
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/` | API information | No |
+| GET | `/health` | Basic health check | No |
+| GET | `/health/database` | Database health check | No |
+| **POST** | **`/api/auth/register`** | **Register new user** | **No** |
+| **POST** | **`/api/auth/login`** | **Login user** | **No** |
+| **GET** | **`/api/auth/me`** | **Get current user** | **Yes** |
+| GET | `/api/users` | Get all users | No |
+| GET | `/api/users/{id}` | Get user by ID | No |
+| POST | `/api/users` | Create new user | No |
 
-## 📝 Example API Calls
+## 🔐 Authentication
 
-### Get All Users
+This API uses **JWT (JSON Web Tokens)** for authentication.
+
+### Register a New User
 ```bash
-curl http://localhost:8080/api/users
+curl -X POST http://localhost:8080/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "SecurePass123"
+  }'
 ```
 
 **Response:**
 ```json
 {
   "status": "success",
-  "message": "Users retrieved successfully from database",
-  "count": 3,
-  "data": [
-    {
+  "message": "User registered successfully",
+  "data": {
+    "user": {
       "id": "1",
       "name": "John Doe",
       "email": "john@example.com",
       "createdAt": "2024-12-19T10:00:00Z"
-    }
-  ]
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
 }
 ```
 
-### Create User
+### Login
 ```bash
-curl -X POST http://localhost:8080/api/users \
+curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"name":"Bob Wilson","email":"bob@example.com"}'
+  -d '{
+    "email": "john@example.com",
+    "password": "SecurePass123"
+  }'
 ```
 
 **Response:**
 ```json
 {
   "status": "success",
-  "message": "User created successfully in database",
+  "message": "Login successful",
   "data": {
-    "id": "4",
-    "name": "Bob Wilson",
-    "email": "bob@example.com",
-    "createdAt": "2024-12-19T10:30:00Z"
+    "user": { ... },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
 }
 ```
+
+### Access Protected Routes
+
+Use the token in the `Authorization` header:
+```bash
+curl http://localhost:8080/api/auth/me \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+```
+
+### Password Requirements
+
+- Minimum 8 characters
+- At least one letter
+- At least one number
+
+## 🔒 Security Features
+
+- ✅ **Password Hashing**: Bcrypt with salt
+- ✅ **JWT Tokens**: HS256 algorithm
+- ✅ **Token Expiration**: 24 hours
+- ✅ **Password Validation**: Strength requirements
+- ✅ **Protected Routes**: Bearer token authentication
 
 ## 🏗️ Project Structure
 ```
@@ -222,15 +256,61 @@ curl http://localhost:8080/api/users/1
 
 ## 🚧 Roadmap
 
-- [ ] JWT Authentication
-- [ ] User login/register endpoints
-- [ ] Password hashing
+### Completed ✅
+- [x] RESTful API endpoints
+- [x] PostgreSQL database integration
+- [x] JWT Authentication
+- [x] User registration
+- [x] User login
+- [x] Password hashing (bcrypt)
+- [x] Protected routes
+- [x] Request logging
+- [x] Error handling
+- [x] Data validation
+- [x] Health checks
+
+### In Progress 🔄
+- [ ] Unit tests (GoogleTest)
+- [ ] Docker containerization
+
+### Planned 📋
+- [ ] Refresh tokens
+- [ ] Password reset
+- [ ] Email verification
 - [ ] Pagination
 - [ ] Filtering & sorting
-- [ ] Unit tests
-- [ ] Docker containerization
+- [ ] Rate limiting
+- [ ] API documentation (Swagger/OpenAPI)
 - [ ] CI/CD pipeline
 
+
+## ⚠️ Security Notice
+
+**For Production Deployment:**
+
+1. **Change JWT Secret**: Update the secret key in `src/utils/JwtToken.h` or use environment variables
+2. **Use HTTPS**: Always use TLS/SSL in production
+3. **Environment Variables**: Move credentials from code to `.env` file
+4. **Rate Limiting**: Implement rate limiting on authentication endpoints
+5. **Input Sanitization**: Additional validation for production use
+6. **CORS Configuration**: Configure CORS properly for your frontend domain
+7. **Database Passwords**: Use strong, unique passwords
+8. **Keep Dependencies Updated**: Regular security updates
+
+**Current implementation uses hardcoded credentials for development only!**
+```
+
+---
+
+## 📊 PHASE 5 COMPLETE SUMMARY
+```
+✅ Phase 1: Environment Setup (15%) - COMPLETE
+✅ Phase 2: Core Backend (15%) - COMPLETE
+✅ Phase 3: Professional Architecture (15%) - COMPLETE
+✅ Phase 4: Database Integration (15%) - COMPLETE
+✅ Phase 5: JWT Authentication (15%) - COMPLETE
+
+Total Progress: 75% COMPLETE! 🎉
 
 ## 🙏 Acknowledgments
 

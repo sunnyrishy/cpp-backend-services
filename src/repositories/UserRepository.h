@@ -88,7 +88,44 @@ public:
     }
     
     /**
-     * Create a new user
+     * Find user by email (with password hash)
+     */
+    static std::optional<models::User> findByEmail(const std::string& email) {
+        try {
+            auto conn = database::DatabaseManager::getInstance().getConnection();
+            pqxx::work txn(*conn);
+            
+            auto result = txn.exec_params(
+                "SELECT id, name, email, password_hash, "
+                "TO_CHAR(created_at, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') as created_at "
+                "FROM users WHERE email = $1",
+                email
+            );
+            
+            if (result.empty()) {
+                return std::nullopt;
+            }
+            
+            models::User user;
+            user.id = result[0]["id"].as<std::string>();
+            user.name = result[0]["name"].as<std::string>();
+            user.email = result[0]["email"].as<std::string>();
+            user.passwordHash = result[0]["password_hash"].as<std::string>();
+            user.createdAt = result[0]["created_at"].as<std::string>();
+            
+            txn.commit();
+            std::cout << "✅ Found user by email: " << email << std::endl;
+            
+            return user;
+            
+        } catch (const std::exception& e) {
+            std::cerr << "❌ Database error in findByEmail: " << e.what() << std::endl;
+            throw exceptions::InternalServerException("Failed to retrieve user from database");
+        }
+    }
+    
+    /**
+     * Create a new user (without password - legacy)
      */
     static models::User create(const std::string& name, const std::string& email) {
         try {
@@ -119,6 +156,45 @@ public:
             throw exceptions::ValidationException("Email already exists");
         } catch (const std::exception& e) {
             std::cerr << "❌ Database error in create: " << e.what() << std::endl;
+            throw exceptions::InternalServerException("Failed to create user");
+        }
+    }
+    
+    /**
+     * Create a new user with password
+     */
+    static models::User createWithPassword(const std::string& name, 
+                                          const std::string& email, 
+                                          const std::string& passwordHash) {
+        try {
+            auto conn = database::DatabaseManager::getInstance().getConnection();
+            pqxx::work txn(*conn);
+            
+            auto result = txn.exec_params(
+                "INSERT INTO users (name, email, password_hash) "
+                "VALUES ($1, $2, $3) "
+                "RETURNING id, name, email, "
+                "TO_CHAR(created_at, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') as created_at",
+                name, email, passwordHash
+            );
+            
+            models::User user;
+            user.id = result[0]["id"].as<std::string>();
+            user.name = result[0]["name"].as<std::string>();
+            user.email = result[0]["email"].as<std::string>();
+            user.createdAt = result[0]["created_at"].as<std::string>();
+            user.passwordHash = passwordHash;
+            
+            txn.commit();
+            std::cout << "✅ Created user with password, ID: " << user.id << std::endl;
+            
+            return user;
+            
+        } catch (const pqxx::unique_violation& e) {
+            std::cerr << "❌ Duplicate email: " << email << std::endl;
+            throw exceptions::ValidationException("Email already exists");
+        } catch (const std::exception& e) {
+            std::cerr << "❌ Database error in createWithPassword: " << e.what() << std::endl;
             throw exceptions::InternalServerException("Failed to create user");
         }
     }

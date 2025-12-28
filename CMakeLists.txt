@@ -16,11 +16,16 @@ endif()
 # Find required packages
 find_package(Drogon REQUIRED)
 find_package(PkgConfig REQUIRED)
+# Find OpenSSL for JWT
+find_package(OpenSSL REQUIRED)
 pkg_check_modules(PQXX REQUIRED libpqxx)
 
 # Include directories (where header files are)
 include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PQXX_INCLUDE_DIRS})
+include_directories(${OPENSSL_INCLUDE_DIR})
+include_directories(/usr/local/include)
+include_directories(/usr/local/include/bcrypt)
 
 # Collect all source files RECURSIVELY
 file(GLOB_RECURSE SRC_FILES 
@@ -40,6 +45,9 @@ add_executable(${PROJECT_NAME} ${SRC_FILES})
 target_link_libraries(${PROJECT_NAME} PRIVATE 
     Drogon::Drogon
     ${PQXX_LIBRARIES}
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    bcrypt
 )
 
 # Add library directories

@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "handlers/HealthHandler.h"
+#include "handlers/AuthHandler.h"
 
 using namespace drogon;
 
@@ -74,11 +75,39 @@ int main() {
         ),
         {Post}
     );
+
+    // Auth endpoints
+    app().registerHandler(
+        "/api/auth/register",
+        myapp::RequestLogger::withLogging(
+            myapp::ErrorHandler::withErrorHandling(handlers::handleRegister)
+        ),
+        {Post}
+    );
+    
+    app().registerHandler(
+        "/api/auth/login",
+        myapp::RequestLogger::withLogging(
+            myapp::ErrorHandler::withErrorHandling(handlers::handleLogin)
+        ),
+        {Post}
+    );
+    
+    app().registerHandler(
+        "/api/auth/me",
+        myapp::RequestLogger::withLogging(
+            myapp::ErrorHandler::withErrorHandling(handlers::handleGetCurrentUser)
+        ),
+        {Get}
+    );
     
     std::cout << "✅ Routes registered with logging & error handling:" << std::endl;
     std::cout << "   → GET  / [Logging + Errors]" << std::endl;
     std::cout << "   → GET  /health [Logging + Errors]" << std::endl;
     std::cout << "   → GET  /health/database [Logging + Errors]" << std::endl;
+    std::cout << "   → POST /api/auth/register [Logging + Errors]" << std::endl;
+    std::cout << "   → POST /api/auth/login [Logging + Errors]" << std::endl;
+    std::cout << "   → GET  /api/auth/me [Logging + Errors]" << std::endl;
     std::cout << "   → GET  /api/users [Logging + Errors]" << std::endl;
     std::cout << "   → GET  /api/users/{id} [Logging + Errors]" << std::endl;
     std::cout << "   → POST /api/users [Logging + Errors]" << std::endl;
@@ -100,6 +129,8 @@ int main() {
         ),
         {Get}
     );
+
+    
     
     // Configure server
     app()
