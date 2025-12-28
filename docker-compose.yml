@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: cpp-backend-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cpp_backend_db
+      POSTGRES_USER: cpp_backend_user
+      POSTGRES_PASSWORD: backend_pass_123
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cpp_backend_user -d cpp_backend_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # C++ Backend Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cpp-backend-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: cpp_backend_db
+      DB_USER: cpp_backend_user
+      DB_PASSWORD: backend_pass_123
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  backend-network:
+    driver: bridge

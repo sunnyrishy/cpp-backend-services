@@ -26,13 +26,8 @@ int main() {
     
     // Initialize database connection
     std::cout << "🔧 Initializing database connection..." << std::endl;
-    database::DatabaseManager::initialize(
-        "localhost",           // host
-        "5432",               // port
-        "cpp_backend_db",     // database name
-        "cpp_backend_user",   // username
-        "backend_pass_123"    // password
-    );
+    // Initialize database - will read from env vars if present
+    database::DatabaseManager::initialize();
     
     // Test database connection
     if (!database::DatabaseManager::getInstance().testConnection()) {

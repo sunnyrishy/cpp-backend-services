@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdlib>  // for getenv
 #include <pqxx/pqxx>
 #include <memory>
 #include <string>
@@ -43,17 +44,39 @@ public:
     /**
      * Initialize the singleton instance
      */
-    static void initialize(const std::string& host = "localhost",
-                          const std::string& port = "5432",
-                          const std::string& dbname = "cpp_backend_db",
-                          const std::string& user = "cpp_backend_user",
-                          const std::string& password = "backend_pass_123") {
-        if (instance_ == nullptr) {
-            instance_ = new DatabaseManager(host, port, dbname, user, password);
-            std::cout << "✅ DatabaseManager initialized" << std::endl;
+    static void initialize(const std::string& host = "",
+                      const std::string& port = "5432",
+                      const std::string& dbname = "cpp_backend_db",
+                      const std::string& user = "cpp_backend_user",
+                      const std::string& password = "backend_pass_123") {
+    if (instance_ == nullptr) {
+        // Read from environment variables if provided, otherwise use defaults
+        std::string finalHost = host;
+        if (finalHost.empty()) {
+            const char* envHost = std::getenv("DB_HOST");
+            finalHost = envHost ? envHost : "localhost";
         }
+        
+        std::string finalPort = port;
+        const char* envPort = std::getenv("DB_PORT");
+        if (envPort) finalPort = envPort;
+        
+        std::string finalDbname = dbname;
+        const char* envDbname = std::getenv("DB_NAME");
+        if (envDbname) finalDbname = envDbname;
+        
+        std::string finalUser = user;
+        const char* envUser = std::getenv("DB_USER");
+        if (envUser) finalUser = envUser;
+        
+        std::string finalPassword = password;
+        const char* envPassword = std::getenv("DB_PASSWORD");
+        if (envPassword) finalPassword = envPassword;
+        
+        instance_ = new DatabaseManager(finalHost, finalPort, finalDbname, finalUser, finalPassword);
+        std::cout << "✅ DatabaseManager initialized (Host: " << finalHost << ")" << std::endl;
     }
-    
+}
     /**
      * Get the singleton instance
      */

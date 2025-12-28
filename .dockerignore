@@ -1,0 +1,39 @@
+# Build artifacts (but keep the binary)
+build/*.o
+build/*.a
+build/CMakeFiles/
+build/cmake_install.cmake
+build/CMakeCache.txt
+build/Makefile
+
+# Logs
+logs/
+*.log
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+*.md
+
+# Scripts
+start-server.sh
+
+# Test files
+test_*
+*_test.cpp
+
+# Temporary files
+*.swp
+*.swo
+*~

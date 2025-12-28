@@ -256,32 +256,19 @@ curl http://localhost:8080/api/users/1
 
 ## 🚧 Roadmap
 
-### Completed ✅
 - [x] RESTful API endpoints
 - [x] PostgreSQL database integration
 - [x] JWT Authentication
-- [x] User registration
-- [x] User login
+- [x] User registration & login
 - [x] Password hashing (bcrypt)
 - [x] Protected routes
-- [x] Request logging
-- [x] Error handling
+- [x] Request logging with timing
+- [x] Global error handling
 - [x] Data validation
-- [x] Health checks
+- [x] Health check endpoints
+- [x] **Docker containerization**
+- [x] **Docker Compose orchestration**
 
-### In Progress 🔄
-- [ ] Unit tests (GoogleTest)
-- [ ] Docker containerization
-
-### Planned 📋
-- [ ] Refresh tokens
-- [ ] Password reset
-- [ ] Email verification
-- [ ] Pagination
-- [ ] Filtering & sorting
-- [ ] Rate limiting
-- [ ] API documentation (Swagger/OpenAPI)
-- [ ] CI/CD pipeline
 
 
 ## ⚠️ Security Notice
@@ -316,3 +303,24 @@ Total Progress: 75% COMPLETE! 🎉
 
 - [Drogon Framework](https://github.com/drogonframework/drogon)
 - [libpqxx](https://github.com/jtv/libpqxx)
+
+## 🐳 Docker Deployment (Recommended)
+
+The easiest way to run this application is with Docker:
+```bash
+# Build and start
+docker-compose up -d
+
+# Check status
+docker-compose ps
+
+# View logs
+docker-compose logs -f app
+
+# Test
+curl http://localhost:8080/health
+```
+
+**See [DOCKER.md](DOCKER.md) for complete Docker documentation.**
+
+---
